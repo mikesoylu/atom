@@ -122,10 +122,31 @@ window.onresize = (e) ->
   atom.height = atom.canvas.height
 window.onresize()
 
-class Game
+class Entity
   constructor: ->
   update: (dt) ->
   draw: ->
+
+class Scene
+  constructor: ->
+    @entities = []
+  add: (entity) ->
+    @entities.push entity
+    entity
+  update: (dt) ->
+    entity.update(dt) for entity in @entities
+    @
+  draw: ->
+    entity.draw() for entity in @entities
+    @
+
+class Game
+  constructor: (scene) ->
+    @scene = scene
+  update: (dt) ->
+    @scene.update dt
+  draw: ->
+    @scene.draw()
   run: ->
     return if @running
     @running = true
