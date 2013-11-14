@@ -3,8 +3,7 @@ requestAnimationFrame = window.requestAnimationFrame or
   window.mozRequestAnimationFrame or
   window.oRequestAnimationFrame or
   window.msRequestAnimationFrame or
-  (callback) ->
-    window.setTimeout((-> callback 1000 / 60), 1000 / 60)
+  (callback) -> window.setTimeout((-> callback 1000 / 60), 1000 / 60)
 
 # TODO test this on other browsers
 cancelAnimationFrame = window.cancelAnimationFrame or
@@ -123,30 +122,51 @@ window.onresize = (e) ->
 window.onresize()
 
 class Entity
-  constructor: ->
+  # update interface
   update: (dt) ->
+
+  # draw interface
   draw: ->
 
 class Scene
   constructor: ->
     @entities = []
+    @game = null
+    @bgColor = "#FFFFFF"
+
+  remove: (entity) ->
+    @entities.splice @entities.indexOf(entity), 1
+    entity
+
   add: (entity) ->
     @entities.push entity
     entity
+
   update: (dt) ->
     entity.update(dt) for entity in @entities
     @
+
   draw: ->
+    atom.context.save()
+    atom.context.fillStyle = @bgColor
+    atom.context.fillRect(0, 0, atom.width, atom.height)
     entity.draw() for entity in @entities
+    atom.context.restore()
     @
 
 class Game
-  constructor: (scene) ->
-    @scene = scene
+  constructor: (@scene) ->
+    @scene.game = @
+
   update: (dt) ->
-    @scene.update dt
+    @scene?.update dt
+
   draw: ->
-    @scene.draw()
+    @scene?.draw()
+
+  setScene: (@scene) ->
+    @scene.game = @
+
   run: ->
     return if @running
     @running = true
@@ -157,10 +177,12 @@ class Game
 
     @last_step = Date.now()
     @frameRequest = requestAnimationFrame s
+
   stop: ->
     cancelAnimationFrame @frameRequest if @frameRequest
     @frameRequest = null
     @running = false
+
   step: ->
     now = Date.now()
     dt = (now - @last_step) / 1000
@@ -170,6 +192,8 @@ class Game
     atom.input.clearPressed()
 
 atom.Game = Game
+atom.Entity = Entity
+atom.Scene = Scene
 
 ## Audio
 
